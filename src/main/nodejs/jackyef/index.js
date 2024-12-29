@@ -1,6 +1,18 @@
 import * as fs from 'node:fs';
 import { Buffer } from 'node:buffer';
 
+// Using hash as key improved the time from 2:16 to 1:45.
+// We do this to avoid Buffer.toString().
+// We now surpassed Edgar's total CPU time of 1:57
+function hashBuffer(buffer) {
+  let hash = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    hash = (hash * 31 + buffer[i]) >>> 0; // Simple hash
+  }
+  return hash;
+}
+const stationHashMap = new Map()
+
 const fileName = process.argv[2];
 const stream = fs.createReadStream(fileName, {
   highWaterMark: 128 * 1024, // 128kb, following M4 Pro L1d cache size
@@ -22,23 +34,29 @@ stream.on('data', (chunk) => {
 
   let offset = 0;
 
-  // Append new chunk to any residual buffer
+  // Prepend the previous buffer if it exists
   if (buffer && buffer.length) {
     chunk = Buffer.concat([buffer, chunk]);
     buffer = Buffer.allocUnsafe(0);
   }
 
   while (offset < chunk.length) {
-    const semicolonIndex = chunk.indexOf(semicolon, offset);
     const newlineIndex = chunk.indexOf(newline, offset);
-
-    if (semicolonIndex === -1 || newlineIndex === -1) {
+    
+    if (newlineIndex === -1) {
+      // Incomplete data, need to process next chunk.
       // Retain the unprocessed portion for the next chunk
       buffer = chunk.slice(offset);
       break;
     }
+    const semicolonIndex = chunk.indexOf(semicolon, offset);
+    
+    const stationBuffer = chunk.slice(offset, semicolonIndex);
+    const stationHash = hashBuffer(stationBuffer);
+    const nameFromCache = stationHashMap.get(stationHash)
+    const stationName = nameFromCache || stationBuffer.toString()
+    if (!nameFromCache) stationHashMap.set(stationHash, stationName)
 
-    const stationName = chunk.slice(offset, semicolonIndex).toString();
     const temp = fastParseFloat(chunk.slice(semicolonIndex + 1, newlineIndex));
 
     const existing = map.get(stationName);
@@ -48,7 +66,7 @@ stream.on('data', (chunk) => {
         min: temp,
         max: temp,
         sum: temp,
-        count: 1,
+        count: 1
       });
     } else {
       existing.min = Math.min(existing.min, temp);
@@ -65,10 +83,10 @@ stream.on('end', () => {
   stream.close()
   printCompiledResults(map)
 })
+
 /**
  * @typedef {Map<string, {min: number, max: number, sum: number, count: number}>} CalcResultsCont
  */
-
 
 /**
  * @param {CalcResultsCont} compiledResults
