@@ -2,7 +2,7 @@ import * as readline from 'node:readline';
 import * as fs from 'node:fs';
 
 const fileName = process.argv[2];
-const stream = fs.createReadStream(fileName);
+const stream = fs.createReadStream(fileName, { highWaterMark: 1 * 1024 });
 const lineStream = readline.createInterface(stream);
 
 const aggregations = new Map();
