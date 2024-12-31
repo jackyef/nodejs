@@ -48,3 +48,4 @@ out_expected.txt
 node_modules
 
 .clinic
+isolate*

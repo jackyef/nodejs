@@ -28,8 +28,14 @@
 # time node src/main/nodejs/jackyef/scheduler-worker.js measurements-sample.txt
 # clinic flame -- node src/main/nodejs/jackyef/scheduler-worker.js measurements2.txt
 
-time node src/main/nodejs/jackyef/split-work-upfront.js measurements.txt
+# time node src/main/nodejs/jackyef/split-work-upfront.js measurements.txt
 # time node src/main/nodejs/jackyef/split-work-upfront.js measurements2.txt
 # time node src/main/nodejs/jackyef/split-work-upfront.js measurements-3.txt
 # time node src/main/nodejs/jackyef/split-work-upfront.js measurements-sample.txt
 # clinic flame -- node src/main/nodejs/jackyef/split-work-upfront.js measurements2.txt
+
+time node src/main/nodejs/jackyef/worker-read-file.js measurements.txt
+# time node src/main/nodejs/jackyef/worker-read-file.js measurements2.txt
+# time node src/main/nodejs/jackyef/worker-read-file.js measurements-3.txt
+# time node src/main/nodejs/jackyef/worker-read-file.js measurements-sample.txt
+# clinic flame -- node src/main/nodejs/jackyef/worker-read-file.js measurements.txt
