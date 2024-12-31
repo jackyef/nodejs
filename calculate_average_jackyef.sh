@@ -15,9 +15,21 @@
 #  limitations under the License.
 
 
-time node src/main/nodejs/jackyef/index.js measurements.txt
+# time node src/main/nodejs/jackyef/index.js measurements.txt
 # time node src/main/nodejs/jackyef/index.js measurements-3.txt
 # time node src/main/nodejs/jackyef/index.js measurements2.txt
 # time node src/main/nodejs/jackyef/index.js measurements-sample.txt
 # 0x --visualize-only 7777.0x -- node measurements.txt src/main/nodejs/jackyef/index.js
-# clinic flame -- node src/main/nodejs/jackyef/index.js measurements.txt
+# clinic flame -- node src/main/nodejs/jackyef/index.js measurements2.txt
+
+# time node src/main/nodejs/jackyef/scheduler-worker.js measurements.txt
+# time node src/main/nodejs/jackyef/scheduler-worker.js measurements2.txt
+# time node src/main/nodejs/jackyef/scheduler-worker.js measurements-3.txt
+# time node src/main/nodejs/jackyef/scheduler-worker.js measurements-sample.txt
+# clinic flame -- node src/main/nodejs/jackyef/scheduler-worker.js measurements2.txt
+
+time node src/main/nodejs/jackyef/split-work-upfront.js measurements.txt
+# time node src/main/nodejs/jackyef/split-work-upfront.js measurements2.txt
+# time node src/main/nodejs/jackyef/split-work-upfront.js measurements-3.txt
+# time node src/main/nodejs/jackyef/split-work-upfront.js measurements-sample.txt
+# clinic flame -- node src/main/nodejs/jackyef/split-work-upfront.js measurements2.txt
