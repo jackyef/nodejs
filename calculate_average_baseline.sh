@@ -15,4 +15,10 @@
 #  limitations under the License.
 #
 
-time node src/main/nodejs/baseline/index.js measurements.txt
+# time node src/main/nodejs/baseline/index.js measurements.txt
+# time node src/main/nodejs/baseline/index.js measurements-3.txt
+# time node src/main/nodejs/baseline/index.js measurements2.txt
+
+clinic flame -- node src/main/nodejs/baseline/index.js measurements2.txt
+
+# time node node src/main/nodejs/baseline-improving/index.js measurements.txt

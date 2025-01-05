@@ -27,7 +27,6 @@ const zero = '0'.charCodeAt(0);
 const map = new Map();
 let buffer = Buffer.allocUnsafe(0)
 
-
 stream.on('data', (chunk) => {
   // Should not happen
   if (typeof chunk === 'string') return;
