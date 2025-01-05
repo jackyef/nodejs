@@ -1,36 +1,70 @@
-import * as readline from 'node:readline';
 import * as fs from 'node:fs';
 
 const fileName = process.argv[2];
-const stream = fs.createReadStream(fileName, { highWaterMark: 1 * 1024 });
-const lineStream = readline.createInterface(stream);
+const stream = fs.createReadStream(fileName);
 
 const aggregations = new Map();
 
-for await (const line of lineStream) {
-  const [stationName, temperatureStr] = line.split(';');
+stream.on('end', () => {
+  stream.close();
+  printCompiledResults(aggregations);
+})
 
-  // use integers for computation to avoid loosing precision
-  const temperature = Math.floor(parseFloat(temperatureStr) * 10);
+const NEW_LINE_CHARACTER = '\n'.charCodeAt(0);
+const SEMICOLON_CHARACTER = ';'.charCodeAt(0);
+const LOOKING_FOR_SEMICOLON = 0;
+const LOOKING_FOR_NEWLINE = 1;
 
-  const existing = aggregations.get(stationName);
+let state = LOOKING_FOR_SEMICOLON;
+let stationBuffer = Buffer.alloc(100); // Allocate 100 bytes buffer to store station name
+let tempBuffer = Buffer.alloc(5); // Allocate 5 bytes buffer to store temperature
+let stationBufferIndex = 0;
+let tempBufferIndex = 0;
 
-  if (existing) {
-    existing.min = Math.min(existing.min, temperature);
-    existing.max = Math.max(existing.max, temperature);
-    existing.sum += temperature;
-    existing.count++;
-  } else {
-    aggregations.set(stationName, {
-      min: temperature,
-      max: temperature,
-      sum: temperature,
-      count: 1,
-    });
+stream.on('data', (chunk) => {
+  for (let i = 0; i < chunk.length; i++) {
+    const byte = chunk[i];
+
+    if (state === LOOKING_FOR_SEMICOLON) {
+      if (byte === SEMICOLON_CHARACTER) {
+        state = LOOKING_FOR_NEWLINE;
+      } else {
+        stationBuffer[stationBufferIndex] = byte;
+        stationBufferIndex += 1;
+      }
+    } else if (state === LOOKING_FOR_NEWLINE) {
+      if (byte === NEW_LINE_CHARACTER) {
+        const temp = Number(tempBuffer.toString('utf-8', 0, tempBufferIndex)) * 10;
+        const stationName = stationBuffer.toString('utf-8', 0, stationBufferIndex);
+
+        const existing = aggregations.get(stationName);
+
+        if (!existing) {
+          aggregations.set(stationName, {
+            min: temp,
+            max: temp,
+            sum: temp,
+            count: 1
+          });
+        } else {
+          existing.min = Math.min(existing.min, temp);
+          existing.max = Math.max(existing.max, temp);
+          existing.sum += temp;
+          existing.count += 1;
+        }
+
+        // Reset everything for next entry
+        state = LOOKING_FOR_SEMICOLON;
+
+        stationBufferIndex = 0;
+        tempBufferIndex = 0;
+      } else {
+        tempBuffer[tempBufferIndex] = byte;
+        tempBufferIndex += 1;
+      }
+    }
   }
-}
-
-printCompiledResults(aggregations);
+})
 
 /**
  * @param {Map} aggregations
