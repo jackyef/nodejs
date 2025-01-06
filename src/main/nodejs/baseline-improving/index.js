@@ -34,7 +34,7 @@ stream.on('data', (chunk) => {
       }
     } else if (state === LOOKING_FOR_NEWLINE) {
       if (byte === NEW_LINE_CHARACTER) {
-        const temp = Number(tempBuffer.toString('utf-8', 0, tempBufferIndex)) * 10;
+        const temp = specificNumberConversion(tempBuffer, tempBufferIndex - 1);
         const stationName = stationBuffer.toString('utf-8', 0, stationBufferIndex);
 
         const existing = aggregations.get(stationName);
@@ -65,6 +65,27 @@ stream.on('data', (chunk) => {
     }
   }
 })
+
+const DOT_CHARACTER = '.'.charCodeAt(0);
+const MINUS_CHARACTER = '-'.charCodeAt(0);
+const ZERO_CHARACTER = '0'.charCodeAt(0);
+
+function specificNumberConversion(buffer, lastIndex) {
+  let value = 0;
+  let pow = 0;
+
+  for (let i = lastIndex; i >= 0; i--) {
+    if (buffer[i] !== DOT_CHARACTER) {
+      if (buffer[i] === MINUS_CHARACTER) {
+        value *= -1;
+      } else {
+        value += (buffer[i] - ZERO_CHARACTER) * (10 ** pow++);
+      }
+    }
+  }
+
+  return value;
+}
 
 /**
  * @param {Map} aggregations
